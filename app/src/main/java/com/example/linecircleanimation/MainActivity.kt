@@ -16,6 +16,8 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -28,6 +30,7 @@ import androidx.core.graphics.translationMatrix
 import com.example.linecircleanimation.ui.LineCircleAnimationTheme
 import kotlin.math.cos
 import kotlin.math.sin
+import androidx.compose.runtime.*
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,22 +56,28 @@ class MainActivity : AppCompatActivity() {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
                     Column() {
+                        var fromState by remember { mutableStateOf(LineState.LINE) }
+                        var toState by remember { mutableStateOf(LineState.CIRCLE) }
+
                         Button(onClick = {
-                            println("Clicked")
+                            if (fromState == LineState.LINE) {
+                                fromState = LineState.CIRCLE
+                                toState = LineState.LINE
+                            } else {
+                                fromState = LineState.LINE
+                                toState = LineState.CIRCLE
+                            }
                         }) {
                             Text(text = "Animate")
                         }
-                        AnimatedLine(startXY, endXY)
-//                        Line()
-//                        Circle(600f, 200f)
+
+                        AnimatedLine(startXY, endXY, fromState, toState)
                     }
                 }
             }
         }
     }
 }
-
-private fun getValue(start: Float, end: Float, fraction: Float) = (1 - fraction) * start + fraction * end
 
 private val value = FloatPropKey("value")
 
@@ -86,13 +95,18 @@ private val definition = transitionDefinition<LineState> {
     }
 
     transition(LineState.LINE to LineState.CIRCLE, LineState.CIRCLE to LineState.LINE) {
-        value using tween(durationMillis = 2000)
+        value using tween(durationMillis = 1000)
     }
 }
 
 @Composable
-fun AnimatedLine(startPoints: List<Float>, endPoints: List<Float>) {
-    val state = transition(definition = definition, initState = LineState.LINE, toState = LineState.CIRCLE)
+fun AnimatedLine(
+        startPoints: List<Float>,
+        endPoints: List<Float>,
+        fromState: LineState,
+        toState: LineState) {
+
+    val state = transition(definition = definition, initState = fromState, toState = toState)
 
     val animatedValue = state[value]
     val fae = FloatArrayEvaluator()
@@ -181,18 +195,5 @@ fun LinePreview() {
 fun CirclePreview() {
     LineCircleAnimationTheme {
         Circle(600f, 200f)
-    }
-}
-
-@Composable
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    LineCircleAnimationTheme {
-        Greeting("Android")
     }
 }
