@@ -36,6 +36,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+//        todo how to get sizes of views.
         val line = createLinePoints(600f)
         val circle = createCirclePoints(600f, 600f, 200f)
 
@@ -53,28 +54,38 @@ class MainActivity : AppCompatActivity() {
         println()
         setContent {
             LineCircleAnimationTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
                     Column() {
-                        var fromState by remember { mutableStateOf(LineState.LINE) }
-                        var toState by remember { mutableStateOf(LineState.CIRCLE) }
+                        var animationState by remember { mutableStateOf<AnimationState>(AnimationState.Initial(startXY)) }
 
                         Button(onClick = {
-                            if (fromState == LineState.LINE) {
-                                fromState = LineState.CIRCLE
-                                toState = LineState.LINE
-                            } else {
-                                fromState = LineState.LINE
-                                toState = LineState.CIRCLE
+                            val s = animationState
+                            animationState = when (s) {
+                                is AnimationState.Initial -> s.next(endXY)
+                                is AnimationState.Animated -> s.reverse()
                             }
                         }) {
                             Text(text = "Animate")
                         }
 
-                        AnimatedLine(startXY, endXY, fromState, toState)
+                        AnimatedLine(animationState)
                     }
                 }
             }
+        }
+    }
+}
+
+private sealed class AnimationState(val from: List<Float>, val to: List<Float>, val fromState: LineState, val toState: LineState) {
+    class Initial(from: List<Float>) : AnimationState(from, from, LineState.LINE, LineState.LINE) {
+        fun next(to: List<Float>): Animated {
+            return Animated(from, to)
+        }
+    }
+    class Animated(from: List<Float>, to: List<Float>, fromState: LineState = LineState.LINE, toState: LineState = LineState.CIRCLE) : AnimationState(from, to, fromState, toState) {
+        fun reverse(): Animated {
+            val tempFromState = fromState
+            return Animated(from = from, to = to, fromState = toState, toState = tempFromState)
         }
     }
 }
@@ -100,17 +111,12 @@ private val definition = transitionDefinition<LineState> {
 }
 
 @Composable
-fun AnimatedLine(
-        startPoints: List<Float>,
-        endPoints: List<Float>,
-        fromState: LineState,
-        toState: LineState) {
-
-    val state = transition(definition = definition, initState = fromState, toState = toState)
+private fun AnimatedLine(animationState: AnimationState) {
+    val state = transition(definition = definition, initState = animationState.fromState, toState = animationState.toState)
 
     val animatedValue = state[value]
     val fae = FloatArrayEvaluator()
-    val evaluatedValues = fae.evaluate(animatedValue, startPoints.toFloatArray(), endPoints.toFloatArray())
+    val evaluatedValues = fae.evaluate(animatedValue, animationState.from.toFloatArray(), animationState.to.toFloatArray())
     val pointsToDraw = mutableListOf<PointF>()
     for (i in evaluatedValues.indices step 2) {
         pointsToDraw.add(PointF(evaluatedValues[i], evaluatedValues[i + 1]))
