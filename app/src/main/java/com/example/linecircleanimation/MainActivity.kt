@@ -1,6 +1,7 @@
 package com.example.linecircleanimation
 
 import android.animation.FloatArrayEvaluator
+import android.graphics.Point
 import android.graphics.PointF
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -31,6 +32,7 @@ import com.example.linecircleanimation.ui.LineCircleAnimationTheme
 import kotlin.math.cos
 import kotlin.math.sin
 import androidx.compose.runtime.*
+import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,6 +41,7 @@ class MainActivity : AppCompatActivity() {
 //        todo how to get sizes of views.
         val line = createLinePoints(600f)
         val circle = createCirclePoints(600f, 600f, 200f)
+//        val circle = createSpiralPoints(600f, 600f, 200f)
 
         val startXY = mutableListOf<Float>()
         val endXY = mutableListOf<Float>()
@@ -51,7 +54,6 @@ class MainActivity : AppCompatActivity() {
             endXY += p.y
         }
 
-        println()
         setContent {
             LineCircleAnimationTheme {
                 Surface(color = MaterialTheme.colors.background) {
@@ -160,10 +162,12 @@ fun Line(points: List<PointF>) {
     }
 }
 
+private const val numberOfPoints = 300
+
 private fun createLinePoints(width: Float): List<PointF> {
-    return (0 until 80).toList()
+    return (0 until numberOfPoints).toList()
             .map { index ->
-                PointF((index * (width / 80)), 50f)
+                PointF((index * (width / numberOfPoints)), 50f)
             }
 }
 
@@ -175,8 +179,8 @@ private fun createCirclePoints(width: Float, height: Float, radius: Float): List
     val translationMatrix = translationMatrix(0f, 50f)
 
     val circlePart = 1.2 // 2.0 is a full circle
-    val angle = circlePart * Math.PI / 80
-    return (0 until 80).toList()
+    val angle = circlePart * Math.PI / numberOfPoints
+    return (0 until numberOfPoints).toList()
             .map { index ->
                 val x = cx + (radius * cos(angle * index)).toFloat()
                 val y = cy + (radius * sin(angle * index)).toFloat()
@@ -184,6 +188,37 @@ private fun createCirclePoints(width: Float, height: Float, radius: Float): List
                 rotationMatrix.mapPoints(rotated, floatArrayOf(x, y))
                 val translated = FloatArray(2)
                 translationMatrix.mapPoints(translated, rotated)
+                PointF(translated[0], translated[1])
+            }
+}
+
+private fun createSpiralPoints(width: Float, height: Float, endRadius: Float): List<PointF> {
+    val cx = width / 2
+    val cy = height / 2
+
+    val numberOfSpirals = 4
+    val pointsPerSpiral = numberOfPoints / numberOfSpirals
+
+    val rotationMatrix = rotationMatrix(164f, cx, cy)
+    val translationMatrix = translationMatrix(0f, 0f)
+
+    val circlePart = 2.0
+    val angle = circlePart * Math.PI / pointsPerSpiral
+    var radius = 0f
+    val radiusUnit = endRadius / numberOfPoints
+
+    return (0 until numberOfPoints).toList()
+            .map { index ->
+                println("value: index = $index")
+                val spiralPoint = index % pointsPerSpiral
+                println("value: spiralPoint = $spiralPoint")
+                val x = cx + (radius * cos(angle * spiralPoint)).toFloat()
+                val y = cy + (radius * sin(angle * spiralPoint)).toFloat()
+                val rotated = FloatArray(2)
+                rotationMatrix.mapPoints(rotated, floatArrayOf(x, y))
+                val translated = FloatArray(2)
+                translationMatrix.mapPoints(translated, rotated)
+                radius += radiusUnit
                 PointF(translated[0], translated[1])
             }
 }
