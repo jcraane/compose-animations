@@ -9,6 +9,7 @@ import androidx.compose.animation.transition
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -16,12 +17,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.WithConstraints
-import androidx.compose.ui.platform.AmbientDensity
-import androidx.compose.ui.platform.DensityAmbient
 import com.example.linecircleanimation.extensions.asFloat
 import com.example.linecircleanimation.extensions.asPointF
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.getValue
 
 private val value = FloatPropKey("value")
 
