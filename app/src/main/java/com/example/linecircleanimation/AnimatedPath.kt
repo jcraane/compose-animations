@@ -20,6 +20,8 @@ import androidx.compose.ui.platform.AmbientDensity
 import androidx.compose.ui.platform.DensityAmbient
 import com.example.linecircleanimation.extensions.asFloat
 import com.example.linecircleanimation.extensions.asPointF
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
 
 private val value = FloatPropKey("value")
 
@@ -37,7 +39,7 @@ private val definition = transitionDefinition<TransitionState> {
     }
 
     transition(TransitionState.START to TransitionState.END, TransitionState.END to TransitionState.START) {
-        value using tween(durationMillis = 1000)
+        value using tween(durationMillis = 750)
     }
 }
 
@@ -47,14 +49,17 @@ fun AnimatedPath(
         shapeAnimation: ShapeAnimation
 ) {
     WithConstraints(modifier = modifier.fillMaxSize()) {
-//        todo see of we can optimize this (use remember).
         val width = constraints.maxWidth.toFloat()
         val height = constraints.maxHeight.toFloat()
 
         val state = transition(definition = definition, toState = shapeAnimation.toState, initState = shapeAnimation.fromState)
 
-        val pointsFrom = if (shapeAnimation.fromState == TransitionState.START) shapeAnimation.from.calculatePoints(width, height) else shapeAnimation.to.calculatePoints(width, height)
-        val pointsTo = if (shapeAnimation.fromState == TransitionState.START) shapeAnimation.to.calculatePoints(width, height) else shapeAnimation.from.calculatePoints(width, height)
+        val pointsFrom by remember(shapeAnimation) {
+            mutableStateOf(if (shapeAnimation.fromState == TransitionState.START) shapeAnimation.from.calculatePoints(width, height) else shapeAnimation.to.calculatePoints(width, height))
+        }
+        val pointsTo by remember(shapeAnimation) {
+            mutableStateOf(if (shapeAnimation.fromState == TransitionState.START) shapeAnimation.to.calculatePoints(width, height) else shapeAnimation.from.calculatePoints(width, height))
+        }
 
         val animatedValue = state[value]
         val fae = FloatArrayEvaluator()
@@ -67,8 +72,6 @@ fun AnimatedPath(
 @Composable
 fun Path(points: List<PointF>) {
     Canvas(modifier = Modifier.fillMaxSize()) {
-        println("anim: canvas width = ${size.width}")
-        println("anim: canvas height = ${size.height}")
         val path = androidx.compose.ui.graphics.Path()
         val first = points.first()
         path.moveTo(first.x, first.y)
