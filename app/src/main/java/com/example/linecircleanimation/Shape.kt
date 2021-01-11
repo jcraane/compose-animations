@@ -7,17 +7,18 @@ import androidx.core.graphics.translationMatrix
 import kotlin.math.cos
 import kotlin.math.sin
 
-sealed class Shape(protected val numberOfPoints: Int = 300) {
+sealed class Shape(protected val numberOfPoints: Int = 300, val closePath: Boolean = false) {
     class Line : Shape() {
         override fun calculatePoints(width: Float, height: Float): List<PointF> {
+            val midX = height / 2
             return (0 until numberOfPoints).toList()
                     .map { index ->
-                        PointF((index * (width / numberOfPoints)), 0f)
+                        PointF((index * (width / numberOfPoints)), midX)
                     }
         }
     }
 
-    class Triangle : Shape() {
+    class Triangle : Shape(closePath = true) {
         override fun calculatePoints(width: Float, height: Float): List<PointF> {
             val sides = 3
             val pointsPerSide = numberOfPoints / sides
@@ -39,7 +40,7 @@ sealed class Shape(protected val numberOfPoints: Int = 300) {
         }
     }
 
-    class Rectangle : Shape() {
+    class Rectangle : Shape(closePath = true) {
         override fun calculatePoints(width: Float, height: Float): List<PointF> {
             val sides = 4
             val pointsPerSide = numberOfPoints / sides
@@ -52,7 +53,7 @@ sealed class Shape(protected val numberOfPoints: Int = 300) {
                         0 -> PointF(widthUnit * index, 0f)
                         1 -> PointF(width, (heightUnit * index))
                         2 -> PointF(width - (widthUnit * index), height)
-                        3 -> PointF(widthUnit, height - (heightUnit * index))
+                        3 -> PointF(0f, height - (heightUnit * index))
                         else -> null
                     }
                 }

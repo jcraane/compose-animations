@@ -65,17 +65,20 @@ fun AnimatedPath(
         val fae = FloatArrayEvaluator()
         val evaluatedValues = fae.evaluate(animatedValue, pointsFrom.asFloat().toFloatArray(), pointsTo.asFloat().toFloatArray())
 
-        Path(points = evaluatedValues.toList().asPointF())
+        Path(points = evaluatedValues.toList().asPointF(), shapeAnimation.to.closePath)
     }
 }
 
 @Composable
-fun Path(points: List<PointF>) {
+fun Path(points: List<PointF>, closePath: Boolean) {
     Canvas(modifier = Modifier.fillMaxSize()) {
         val path = androidx.compose.ui.graphics.Path()
         val first = points.first()
         path.moveTo(first.x, first.y)
         points.drop(1).forEach { p -> path.lineTo(p.x, p.y) }
+        if (closePath) {
+            path.close()
+        }
         drawPath(path, SolidColor(Color.Blue), style = Stroke(width = 20f))
     }
 }

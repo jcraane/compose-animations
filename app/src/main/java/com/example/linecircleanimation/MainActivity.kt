@@ -25,6 +25,7 @@ class MainActivity : AppCompatActivity() {
             LineCircleAnimationTheme {
                 Surface(color = MaterialTheme.colors.background) {
                     Column(
+                            modifier = Modifier.padding(20.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         var shapeAnimation by remember { mutableStateOf<ShapeAnimation>(ShapeAnimation.Initial(Shape.Line())) }
@@ -32,11 +33,11 @@ class MainActivity : AppCompatActivity() {
                         Button(onClick = {
                             shapeAnimation = shapeAnimation.next()
                         }) {
-                            Text(text = "Animate")
+                            Text(text = "Morph")
                         }
 
                         Spacer(modifier = Modifier.height(20.dp))
-                        AnimatedPath(Modifier.fillMaxSize().padding(20.dp), shapeAnimation)
+                        AnimatedPath(Modifier.fillMaxSize().padding(top = 20.dp), shapeAnimation)
                     }
                 }
             }
@@ -70,4 +71,3 @@ sealed class ShapeAnimation(val from: Shape, val to: Shape, val fromState: Trans
         }
     }
 }
-
