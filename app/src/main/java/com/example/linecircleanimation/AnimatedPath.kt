@@ -42,15 +42,14 @@ private val definition = transitionDefinition<TransitionState> {
 }
 
 @Composable
-fun AnimatedPath(shapeAnimation: ShapeAnimation) {
-    WithConstraints() {
-//        todo see of we can optimize this.
-
-        val width = with(AmbientDensity.current) { constraints.maxWidth.toDp() }.value
-        val height = with(AmbientDensity.current) { constraints.maxHeight.toDp() }.value
-
-//        val pointsFrom = shapeAnimation.from.calculatePoints(width, height)
-//        val pointsTo = shapeAnimation.to.calculatePoints(width, height)
+fun AnimatedPath(
+        modifier: Modifier = Modifier,
+        shapeAnimation: ShapeAnimation
+) {
+    WithConstraints(modifier = modifier.fillMaxSize()) {
+//        todo see of we can optimize this (use remember).
+        val width = constraints.maxWidth.toFloat()
+        val height = constraints.maxHeight.toFloat()
 
         val state = transition(definition = definition, toState = shapeAnimation.toState, initState = shapeAnimation.fromState)
 
@@ -68,6 +67,8 @@ fun AnimatedPath(shapeAnimation: ShapeAnimation) {
 @Composable
 fun Path(points: List<PointF>) {
     Canvas(modifier = Modifier.fillMaxSize()) {
+        println("anim: canvas width = ${size.width}")
+        println("anim: canvas height = ${size.height}")
         val path = androidx.compose.ui.graphics.Path()
         val first = points.first()
         path.moveTo(first.x, first.y)

@@ -2,10 +2,9 @@ package com.example.linecircleanimation
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -14,7 +13,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.WithConstraints
+import androidx.compose.ui.platform.AmbientDensity
 import androidx.compose.ui.platform.setContent
 import androidx.compose.ui.unit.dp
 import com.example.linecircleanimation.ui.LineCircleAnimationTheme
@@ -26,8 +31,10 @@ class MainActivity : AppCompatActivity() {
         setContent {
             LineCircleAnimationTheme {
                 Surface(color = MaterialTheme.colors.background) {
-                    Column() {
-                        var shapeAnimation by remember { mutableStateOf<ShapeAnimation>(ShapeAnimation.Initial(Shape.Line()))}
+                    Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        var shapeAnimation by remember { mutableStateOf<ShapeAnimation>(ShapeAnimation.Initial(Shape.Line())) }
 
                         Button(onClick = {
                             shapeAnimation = shapeAnimation.next()
@@ -36,7 +43,7 @@ class MainActivity : AppCompatActivity() {
                         }
 
                         Spacer(modifier = Modifier.height(20.dp))
-                        AnimatedPath(shapeAnimation)
+                        AnimatedPath(Modifier.fillMaxSize().padding(20.dp), shapeAnimation)
                     }
                 }
             }
@@ -52,12 +59,12 @@ sealed class ShapeAnimation(val from: Shape, val to: Shape, val fromState: Trans
     }
 
     class Animated(from: Shape, to: Shape, fromState: TransitionState, toState: TransitionState) : ShapeAnimation(from, to, fromState, toState) {
-         override fun next(): Animated {
-             val newFrom = this.to
-             val newTo = nextShape(newFrom)
-             val tempFromState = fromState
-             return Animated(from = newFrom, to = newTo, fromState = toState, toState = tempFromState)
-         }
+        override fun next(): Animated {
+            val newFrom = this.to
+            val newTo = nextShape(newFrom)
+            val tempFromState = fromState
+            return Animated(from = newFrom, to = newTo, fromState = toState, toState = tempFromState)
+        }
     }
 
     companion object {
